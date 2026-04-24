@@ -3,63 +3,134 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>سكان | لوحة تشغيل MVP</title>
+    <title>سكان | منصة تشغيل متقدمة</title>
     <style>
-      body { font-family: Arial, sans-serif; background: #f7f9fc; margin: 0; color: #1f2a44; }
-      header { background: #0b3d91; color: #fff; padding: 16px 24px; }
-      main { padding: 24px; max-width: 1000px; margin: auto; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 12px; margin-bottom: 24px; }
-      .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
-      h2 { margin-top: 0; }
+      :root {
+        --bg: #0b1220;
+        --panel: #111a2b;
+        --panel-2: #19233a;
+        --txt: #ebeff8;
+        --muted: #9fb0d0;
+        --accent: #4f8cff;
+        --ok: #24b47e;
+        --warn: #f59e0b;
+      }
+      body { margin: 0; font-family: Inter, Arial, sans-serif; background: radial-gradient(circle at top, #182949 0%, var(--bg) 45%); color: var(--txt); }
+      header { padding: 24px; border-bottom: 1px solid #283758; background: rgba(10,16,30,.75); backdrop-filter: blur(8px); position: sticky; top: 0; }
+      .title { margin: 0; font-size: 24px; }
+      .sub { margin-top: 6px; color: var(--muted); }
+      main { max-width: 1200px; margin: 20px auto; padding: 0 16px 32px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 12px; }
+      .card { background: linear-gradient(135deg, var(--panel), var(--panel-2)); border: 1px solid #2a3f65; border-radius: 16px; padding: 16px; box-shadow: 0 8px 30px rgba(5,10,20,.35); }
+      .metric { font-size: 28px; font-weight: 700; margin: 4px 0; }
+      .label { color: var(--muted); font-size: 14px; }
+      .layout { display: grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 14px; margin-top: 14px; }
       form { display: grid; gap: 8px; }
-      input, button { padding: 10px; border-radius: 8px; border: 1px solid #ccd3e0; }
-      button { background: #0b3d91; color: #fff; cursor: pointer; border: none; }
-      table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
-      th, td { padding: 10px; border-bottom: 1px solid #eef1f6; text-align: right; }
-      .muted { color: #667085; font-size: 14px; }
+      input, select, button { border-radius: 10px; border: 1px solid #31486f; background: #0e1728; color: var(--txt); padding: 11px; }
+      button { cursor: pointer; background: linear-gradient(120deg, #2f63ff, #4f8cff); border: none; font-weight: 700; }
+      button:hover { filter: brightness(1.08); }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+      th, td { padding: 9px; border-bottom: 1px solid #2a3f65; text-align: right; }
+      .pill { border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+      .paid { background: rgba(36,180,126,.2); color: #5ce6ae; }
+      .pending { background: rgba(79,140,255,.2); color: #94bcff; }
+      .overdue { background: rgba(245,158,11,.2); color: #ffc86b; }
+      .msg { margin-top: 6px; color: #93ffe0; font-size: 13px; min-height: 20px; }
     </style>
   </head>
   <body>
     <header>
-      <h1>سكان (Sukan) — لوحة تشغيل كاملة (MVP)</h1>
+      <h1 class="title">سكان (Sukan) — منصة إدارة Co-living متقدمة</h1>
+      <div class="sub">إدارة الوحدات، السكان، العقود، التحصيل، وتحليلات الأداء من لوحة واحدة.</div>
     </header>
+
     <main>
       <section class="grid" id="metrics"></section>
 
-      <section class="card">
-        <h2>إضافة وحدة سكنية</h2>
-        <form id="property-form">
-          <input id="title" placeholder="اسم الوحدة" required />
-          <input id="city" placeholder="المدينة" required />
-          <input id="total_rooms" type="number" min="1" placeholder="عدد الغرف" required />
-          <button type="submit">حفظ الوحدة</button>
-        </form>
+      <section class="layout">
+        <div class="card">
+          <h3>إضافة وحدة</h3>
+          <form id="property-form">
+            <input id="p_title" placeholder="اسم الوحدة" required />
+            <input id="p_city" placeholder="المدينة" required />
+            <input id="p_district" placeholder="الحي" />
+            <input id="p_rooms" type="number" min="1" placeholder="عدد الغرف" required />
+            <input id="p_rent" type="number" min="1" placeholder="الإيجار الأساسي (SAR)" required />
+            <button type="submit">حفظ الوحدة</button>
+          </form>
+          <div id="property-msg" class="msg"></div>
+        </div>
+
+        <div class="card">
+          <h3>إضافة ساكن</h3>
+          <form id="tenant-form">
+            <input id="t_name" placeholder="الاسم الكامل" required />
+            <input id="t_email" type="email" placeholder="email@example.com" required />
+            <input id="t_work" placeholder="عمل / دراسة" required />
+            <input id="t_interests" placeholder="اهتمامات (comma separated)" />
+            <select id="t_sleep">
+              <option value="early">Early</option>
+              <option value="flexible" selected>Flexible</option>
+              <option value="late">Late</option>
+            </select>
+            <input id="t_clean" type="number" min="0" max="10" value="7" required />
+            <button type="submit">حفظ الساكن</button>
+          </form>
+          <div id="tenant-msg" class="msg"></div>
+        </div>
+
+        <div class="card">
+          <h3>إنشاء عقد</h3>
+          <form id="contract-form">
+            <input id="c_property" type="number" min="1" placeholder="رقم الوحدة" required />
+            <input id="c_tenant" type="number" min="1" placeholder="رقم الساكن" required />
+            <input id="c_rent" type="number" min="1" placeholder="الإيجار الشهري" required />
+            <input id="c_deposit" type="number" min="0" placeholder="التأمين" value="0" required />
+            <input id="c_start" type="date" required />
+            <input id="c_end" type="date" required />
+            <button type="submit">إنشاء العقد</button>
+          </form>
+          <div id="contract-msg" class="msg"></div>
+        </div>
+
+        <div class="card">
+          <h3>إصدار فاتورة</h3>
+          <form id="payment-form">
+            <input id="pay_contract" type="number" min="1" placeholder="رقم العقد" required />
+            <input id="pay_amount" type="number" min="1" placeholder="المبلغ" required />
+            <input id="pay_due" type="date" required />
+            <button type="submit">إصدار الفاتورة</button>
+          </form>
+          <div id="payment-msg" class="msg"></div>
+        </div>
       </section>
 
-      <section class="card" style="margin-top: 16px;">
-        <h2>إضافة عقد</h2>
-        <form id="contract-form">
-          <input id="property_id" type="number" min="1" placeholder="رقم الوحدة" required />
-          <input id="tenant_name" placeholder="اسم المستأجر" required />
-          <input id="monthly_rent_sar" type="number" min="1" placeholder="الإيجار الشهري (ريال)" required />
-          <input id="start_date" type="date" required />
-          <input id="end_date" type="date" required />
-          <button type="submit">إضافة العقد</button>
-        </form>
-      </section>
+      <section class="layout">
+        <div class="card">
+          <h3>الوحدات</h3>
+          <table><thead><tr><th>#</th><th>الاسم</th><th>المدينة</th><th>الإشغال</th></tr></thead><tbody id="properties-body"></tbody></table>
+        </div>
 
-      <section style="margin-top: 16px;">
-        <h2>الوحدات</h2>
-        <p class="muted">يتم التحديث تلقائيًا بعد كل عملية إضافة.</p>
-        <table>
-          <thead><tr><th>رقم</th><th>الاسم</th><th>المدينة</th><th>الإشغال</th></tr></thead>
-          <tbody id="properties-body"></tbody>
-        </table>
+        <div class="card">
+          <h3>المدفوعات</h3>
+          <table><thead><tr><th>#</th><th>العقد</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="payments-body"></tbody></table>
+        </div>
+
+        <div class="card">
+          <h3>توصيات التوافق</h3>
+          <form id="recommend-form">
+            <input id="r_tenant_id" type="number" min="1" placeholder="رقم الساكن" required />
+            <button type="submit">احسب التوصيات</button>
+          </form>
+          <table><thead><tr><th>الساكن</th><th>النتيجة</th></tr></thead><tbody id="recommend-body"></tbody></table>
+        </div>
       </section>
     </main>
 
     <script>
-      async function fetchJson(url, options) {
+      const byId = (id) => document.getElementById(id);
+
+      async function fetchJson(url, options = {}) {
         const res = await fetch(url, options);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
@@ -68,78 +139,142 @@
         return res.json();
       }
 
-      function renderMetrics(data) {
-        const metrics = document.getElementById('metrics');
-        metrics.innerHTML = `
-          <div class="card"><h2>${data.properties}</h2><p>عدد الوحدات</p></div>
-          <div class="card"><h2>${data.active_contracts}</h2><p>العقود الفعالة</p></div>
-          <div class="card"><h2>${data.occupied_rooms}/${data.total_rooms}</h2><p>إشغال الغرف</p></div>
-          <div class="card"><h2>${data.occupancy_rate}%</h2><p>معدل الإشغال</p></div>
+      function setMsg(id, msg, isErr = false) {
+        const el = byId(id);
+        el.style.color = isErr ? '#ff9ea8' : '#93ffe0';
+        el.textContent = msg;
+      }
+
+      function renderMetrics(d) {
+        byId('metrics').innerHTML = `
+          <div class="card"><div class="label">الوحدات</div><div class="metric">${d.properties}</div></div>
+          <div class="card"><div class="label">السكان</div><div class="metric">${d.tenants}</div></div>
+          <div class="card"><div class="label">العقود الفعّالة</div><div class="metric">${d.active_contracts}</div></div>
+          <div class="card"><div class="label">الإشغال</div><div class="metric">${d.occupied_rooms}/${d.total_rooms} (${d.occupancy_rate}%)</div></div>
+          <div class="card"><div class="label">إيراد مدفوع</div><div class="metric">${d.paid_revenue_sar} SAR</div></div>
+          <div class="card"><div class="label">متأخرات</div><div class="metric">${d.overdue_revenue_sar} SAR</div></div>
         `;
       }
 
       function renderProperties(list) {
-        const body = document.getElementById('properties-body');
-        body.innerHTML = list.map((p) => `
+        byId('properties-body').innerHTML = list.map((p) => `<tr><td>${p.id}</td><td>${p.title}</td><td>${p.city}</td><td>${p.occupied_rooms}/${p.total_rooms}</td></tr>`).join('');
+      }
+
+      function renderPayments(list) {
+        byId('payments-body').innerHTML = list.map((p) => `
           <tr>
-            <td>${p.id}</td>
-            <td>${p.title}</td>
-            <td>${p.city}</td>
-            <td>${p.occupied_rooms}/${p.total_rooms}</td>
+            <td>${p.id}</td><td>${p.contract_id}</td><td>${p.amount_sar}</td>
+            <td><span class="pill ${p.status}">${p.status}</span></td>
+            <td>${p.status === 'pending' ? `<button onclick="markPaid(${p.id})">تحصيل</button>` : '-'}</td>
           </tr>
         `).join('');
       }
 
       async function refresh() {
-        const [dashboard, properties] = await Promise.all([
+        await fetchJson('/payments/refresh-overdue', { method: 'POST' });
+        const [dashboard, properties, payments] = await Promise.all([
           fetchJson('/dashboard'),
           fetchJson('/properties'),
+          fetchJson('/payments')
         ]);
         renderMetrics(dashboard);
         renderProperties(properties);
+        renderPayments(payments);
       }
 
-      document.getElementById('property-form').addEventListener('submit', async (e) => {
+      async function markPaid(id) {
+        await fetchJson(`/payments/${id}/mark-paid`, { method: 'POST' });
+        await refresh();
+      }
+      window.markPaid = markPaid;
+
+      byId('property-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
           await fetchJson('/properties', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              title: document.getElementById('title').value,
-              city: document.getElementById('city').value,
-              total_rooms: Number(document.getElementById('total_rooms').value),
+              title: byId('p_title').value,
+              city: byId('p_city').value,
+              district: byId('p_district').value,
+              total_rooms: Number(byId('p_rooms').value),
+              monthly_base_rent_sar: Number(byId('p_rent').value),
             }),
           });
+          setMsg('property-msg', 'تمت إضافة الوحدة بنجاح');
           e.target.reset();
           await refresh();
-        } catch (err) {
-          alert(err.message);
-        }
+        } catch (err) { setMsg('property-msg', err.message, true); }
       });
 
-      document.getElementById('contract-form').addEventListener('submit', async (e) => {
+      byId('tenant-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          await fetchJson('/tenants', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              full_name: byId('t_name').value,
+              email: byId('t_email').value,
+              work_or_study: byId('t_work').value,
+              interests: byId('t_interests').value.split(',').map((v) => v.trim()).filter(Boolean),
+              sleep_schedule: byId('t_sleep').value,
+              cleanliness_level: Number(byId('t_clean').value),
+            }),
+          });
+          setMsg('tenant-msg', 'تمت إضافة الساكن');
+          e.target.reset();
+          await refresh();
+        } catch (err) { setMsg('tenant-msg', err.message, true); }
+      });
+
+      byId('contract-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
           await fetchJson('/contracts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              property_id: Number(document.getElementById('property_id').value),
-              tenant_name: document.getElementById('tenant_name').value,
-              monthly_rent_sar: Number(document.getElementById('monthly_rent_sar').value),
-              start_date: document.getElementById('start_date').value,
-              end_date: document.getElementById('end_date').value,
+              property_id: Number(byId('c_property').value),
+              tenant_id: Number(byId('c_tenant').value),
+              monthly_rent_sar: Number(byId('c_rent').value),
+              security_deposit_sar: Number(byId('c_deposit').value),
+              start_date: byId('c_start').value,
+              end_date: byId('c_end').value,
             }),
           });
+          setMsg('contract-msg', 'تم إنشاء العقد');
           e.target.reset();
           await refresh();
+        } catch (err) { setMsg('contract-msg', err.message, true); }
+      });
+
+      byId('payment-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          await fetchJson('/payments', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contract_id: Number(byId('pay_contract').value),
+              amount_sar: Number(byId('pay_amount').value),
+              due_date: byId('pay_due').value,
+            }),
+          });
+          setMsg('payment-msg', 'تم إصدار الفاتورة');
+          e.target.reset();
+          await refresh();
+        } catch (err) { setMsg('payment-msg', err.message, true); }
+      });
+
+      byId('recommend-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          const data = await fetchJson(`/matching/recommendations/${Number(byId('r_tenant_id').value)}`);
+          byId('recommend-body').innerHTML = data.recommendations.map((r) => `<tr><td>${r.full_name}</td><td>${r.score}</td></tr>`).join('');
         } catch (err) {
-          alert(err.message);
+          byId('recommend-body').innerHTML = `<tr><td colspan="2">${err.message}</td></tr>`;
         }
       });
 
-      refresh().catch((e) => alert(e.message));
+      refresh().catch(console.error);
     </script>
   </body>
 </html>

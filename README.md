@@ -1,16 +1,17 @@
 # سكان (Sukan)
 
-تطبيق **Full-Stack MVP** لحوكمة وتنظيم السكن المشترك (**Co-living**) في المملكة العربية السعودية.
+تطبيق **High-End Full-Stack MVP** لإدارة السكن المشترك في السعودية.
 
-## ما الذي يعمل الآن؟
-- Backend API مبني على **FastAPI**.
-- قاعدة بيانات **SQLite** (تشغيل مباشر بدون إعدادات معقدة).
-- Frontend Web Dashboard (HTML/CSS/JS) لعمليات:
-  - إضافة وحدات سكنية.
-  - إضافة عقود.
-  - متابعة مؤشرات الإشغال بشكل مباشر.
+## الميزات المتقدمة الحالية
+- إدارة العقارات مع تفاصيل إضافية (الحي + الإيجار الأساسي).
+- إدارة السكان بملف تفضيلات (اهتمامات، نمط النوم، مستوى النظافة).
+- إدارة العقود مع التحقق من السعة والتواريخ.
+- إدارة المدفوعات (إصدار فاتورة، تحصيل، تحديث المتأخرات تلقائيًا).
+- لوحة تحكم KPI تشمل: الإشغال، عدد السكان، الإيراد المدفوع/المعلّق/المتأخر.
+- توصيات توافق السكن بين السكان (`/matching/recommendations/{tenant_id}`).
+- واجهة ويب متقدمة RTL موحدة لعمليات التشغيل اليومية.
 
-## تشغيل التطبيق (Backend + Frontend)
+## التشغيل
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -18,41 +19,30 @@ pip install -r requirements.txt
 uvicorn apps.api.main:app --reload
 ```
 
-ثم افتح:
+افتح:
 - التطبيق: `http://127.0.0.1:8000/`
-- Swagger API: `http://127.0.0.1:8000/docs`
+- Swagger: `http://127.0.0.1:8000/docs`
 
-> ملاحظة: يتم إنشاء قاعدة البيانات تلقائيًا باسم `sukan.db`.
-> لتحديد مسار مختلف: `SUKAN_DB_PATH=/path/to/db.sqlite uvicorn apps.api.main:app --reload`
-
-## المزايا الحالية (MVP)
+## API الرئيسية
 - `GET /health`
-- `GET /properties`
-- `POST /properties`
-- `GET /contracts`
-- `POST /contracts`
+- `GET/POST /properties`
+- `GET/POST /tenants`
+- `GET/POST /contracts`
+- `GET/POST /payments`
+- `POST /payments/{payment_id}/mark-paid`
+- `POST /payments/refresh-overdue`
 - `GET /dashboard`
-- `POST /matching/score?interests_overlap=7&schedule_alignment=8&cleanliness_alignment=9`
+- `GET /matching/recommendations/{tenant_id}`
+- `POST /matching/score`
 
 ## اختبارات
 ```bash
-source .venv/bin/activate
 pytest -q
 ```
 
-## هيكل المشروع
-```text
-apps/
-├─ api/
-│  └─ main.py
-└─ web/
-   └─ index.html
-tests/
-└─ test_api.py
-```
-
-## الخطوة التالية المقترحة
-1. نقل الواجهة إلى React/Next.js.
-2. إضافة نظام تسجيل دخول وصلاحيات (RBAC).
-3. إضافة PostgreSQL + Alembic migrations للإنتاج.
-4. إضافة إدارة مدفوعات متكاملة (Payment Gateway).
+## المسار التالي (نسخة Production)
+1. إضافة Auth + RBAC + Audit Trail.
+2. نقل SQLite إلى PostgreSQL مع migrations.
+3. فصل Frontend إلى React/Next.js مع state management.
+4. تكامل مع بوابة دفع حقيقية + webhooks.
+5. Multi-tenant architecture للمشغّلين الكبار.
