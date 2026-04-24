@@ -1,17 +1,16 @@
 # سكان (Sukan)
 
-تطبيق **High-End Full-Stack MVP** لإدارة السكن المشترك في السعودية.
+**Sukan v2.0** — منصة تشغيل متقدمة جدًا (Too Advanced MVP) لقطاع السكن المشترك.
 
-## الميزات المتقدمة الحالية
-- إدارة العقارات مع تفاصيل إضافية (الحي + الإيجار الأساسي).
-- إدارة السكان بملف تفضيلات (اهتمامات، نمط النوم، مستوى النظافة).
-- إدارة العقود مع التحقق من السعة والتواريخ.
-- إدارة المدفوعات (إصدار فاتورة، تحصيل، تحديث المتأخرات تلقائيًا).
-- لوحة تحكم KPI تشمل: الإشغال، عدد السكان، الإيراد المدفوع/المعلّق/المتأخر.
-- توصيات توافق السكن بين السكان (`/matching/recommendations/{tenant_id}`).
-- واجهة ويب متقدمة RTL موحدة لعمليات التشغيل اليومية.
+## ما الجديد في النسخة المتقدمة
+- **Role-based access** عبر token-based login (`admin`, `operator`, `viewer`).
+- **Audit Trail** لكل العمليات الحساسة (إنشاء وحدات/سكان/عقود/مدفوعات/مصروفات).
+- **إدارة تشغيل مالية كاملة**: فواتير، تحصيل، متأخرات، مصروفات، وصافي كاش.
+- **تنبيهات انتهاء العقود** عبر `/alerts/expiring-contracts`.
+- **بحث + Pagination** في قوائم العقارات/السكان/المدفوعات.
+- **واجهة تشغيل موحدة** تدعم تسجيل الدخول، إدارة الكيانات، وإظهار Audit Logs.
 
-## التشغيل
+## تشغيل التطبيق
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -19,30 +18,17 @@ pip install -r requirements.txt
 uvicorn apps.api.main:app --reload
 ```
 
-افتح:
-- التطبيق: `http://127.0.0.1:8000/`
-- Swagger: `http://127.0.0.1:8000/docs`
+- UI: `http://127.0.0.1:8000/`
+- API Docs: `http://127.0.0.1:8000/docs`
 
-## API الرئيسية
-- `GET /health`
-- `GET/POST /properties`
-- `GET/POST /tenants`
-- `GET/POST /contracts`
-- `GET/POST /payments`
-- `POST /payments/{payment_id}/mark-paid`
-- `POST /payments/refresh-overdue`
-- `GET /dashboard`
-- `GET /matching/recommendations/{tenant_id}`
-- `POST /matching/score`
+## أهم الـ Endpoints
+- Auth: `POST /auth/login`
+- Core: `GET/POST /properties`, `GET/POST /tenants`, `GET/POST /contracts`
+- Finance: `GET/POST /payments`, `POST /payments/{id}/mark-paid`, `POST /payments/refresh-overdue`, `GET/POST /expenses`
+- Intelligence: `GET /dashboard`, `GET /alerts/expiring-contracts`, `GET /matching/recommendations/{tenant_id}`
+- Compliance: `GET /audit/logs` (admin only)
 
 ## اختبارات
 ```bash
 pytest -q
 ```
-
-## المسار التالي (نسخة Production)
-1. إضافة Auth + RBAC + Audit Trail.
-2. نقل SQLite إلى PostgreSQL مع migrations.
-3. فصل Frontend إلى React/Next.js مع state management.
-4. تكامل مع بوابة دفع حقيقية + webhooks.
-5. Multi-tenant architecture للمشغّلين الكبار.
