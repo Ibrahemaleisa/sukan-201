@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سكان | Enterprise Console</title>
+    <style>
+      body { margin:0; background:#0a1020; color:#eaf0ff; font-family:Arial; }
+      header { padding:16px 20px; background:#111a31; border-bottom:1px solid #2a3d67; }
+      main { max-width:1200px; margin:auto; padding:16px; }
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+      .card{background:#121d35;border:1px solid #2b426f;border-radius:12px;padding:12px}
+      input,select,button{width:100%;margin:4px 0;padding:9px;border-radius:8px;border:1px solid #385282;background:#0d162a;color:#fff}
+      button{background:#2d63ff;border:none;font-weight:bold;cursor:pointer}
+      table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #2c3f66;text-align:right}
+      .metric{font-size:24px;font-weight:bold}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2>سكان (Sukan) — Advanced Operating Console</h2>
+      <div class="grid">
+        <input id="username" placeholder="username" value="owner_admin" />
+        <select id="role"><option value="admin">admin</option><option value="operator">operator</option><option value="viewer">viewer</option></select>
+        <button id="login-btn">تسجيل دخول وإصدار Token</button>
+      </div>
+      <small id="token-box">Token: غير متصل</small>
+    </header>
+
+    <main>
+      <div class="grid" id="metrics"></div>
+
+      <section class="grid">
+        <div class="card"><h3>إضافة وحدة</h3><form id="property-form"><input id="p_title" placeholder="اسم" required/><input id="p_city" placeholder="مدينة" required/><input id="p_district" placeholder="حي"/><input id="p_rooms" type="number" min="1" placeholder="غرف" required/><input id="p_rent" type="number" min="1" placeholder="إيجار" required/><button>حفظ</button></form></div>
+        <div class="card"><h3>إضافة ساكن</h3><form id="tenant-form"><input id="t_name" placeholder="الاسم" required/><input id="t_email" placeholder="email" required/><input id="t_work" placeholder="عمل/دراسة" required/><input id="t_interests" placeholder="interests comma"/><select id="t_sleep"><option>early</option><option selected>flexible</option><option>late</option></select><input id="t_clean" type="number" min="0" max="10" value="7" required/><button>حفظ</button></form></div>
+        <div class="card"><h3>إنشاء عقد</h3><form id="contract-form"><input id="c_property" type="number" placeholder="property id" required/><input id="c_tenant" type="number" placeholder="tenant id" required/><input id="c_rent" type="number" placeholder="rent" required/><input id="c_dep" type="number" placeholder="deposit" value="0" required/><input id="c_start" type="date" required/><input id="c_end" type="date" required/><button>إنشاء</button></form></div>
+        <div class="card"><h3>مصروف تشغيلي</h3><form id="expense-form"><input id="e_property" type="number" placeholder="property id" required/><select id="e_cat"><option>maintenance</option><option>utilities</option><option>cleaning</option><option>other</option></select><input id="e_amount" type="number" placeholder="amount" required/><input id="e_date" type="date" required/><input id="e_notes" placeholder="notes"/><button>إضافة</button></form></div>
+      </section>
+
+      <section class="grid">
+        <div class="card"><h3>المدفوعات</h3><table><thead><tr><th>#</th><th>عقد</th><th>مبلغ</th><th>حالة</th><th>تحصيل</th></tr></thead><tbody id="payments"></tbody></table></div>
+        <div class="card"><h3>Audit Logs (admin)</h3><button id="load-audit">تحميل السجل</button><table><thead><tr><th>user</th><th>action</th><th>entity</th></tr></thead><tbody id="audit"></tbody></table></div>
+      </section>
+    </main>
+
+    <script>
+      const el=(id)=>document.getElementById(id);let token='';
+      async function api(url,opt={}){opt.headers={...(opt.headers||{}), ...(token?{'x-api-token':token}:{})};const r=await fetch(url,opt);if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||'error')}return r.json()}
+      function msg(t){el('token-box').textContent=`Token: ${t||'غير متصل'}`}
+      async function refresh(){
+        await api('/payments/refresh-overdue',{method:'POST'});
+        const [d,pays]=await Promise.all([api('/dashboard'),api('/payments')]);
+        el('metrics').innerHTML=`<div class='card'><div>الوحدات</div><div class='metric'>${d.properties}</div></div><div class='card'><div>السكان</div><div class='metric'>${d.tenants}</div></div><div class='card'><div>صافي الكاش</div><div class='metric'>${d.net_cash_sar}</div></div><div class='card'><div>الإشغال</div><div class='metric'>${d.occupancy_rate}%</div></div>`;
+        el('payments').innerHTML=pays.map(x=>`<tr><td>${x.id}</td><td>${x.contract_id}</td><td>${x.amount_sar}</td><td>${x.status}</td><td>${x.status==='pending'?`<button onclick='markPaid(${x.id})'>تحصيل</button>`:'-'}</td></tr>`).join('');
+      }
+      window.markPaid=async(id)=>{await api(`/payments/${id}/mark-paid`,{method:'POST'});refresh()}
+
+      el('login-btn').onclick=async()=>{const r=await api('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:el('username').value,role:el('role').value})});token=r.token;msg(token);refresh()}
+
+      el('property-form').onsubmit=async(e)=>{e.preventDefault();await api('/properties',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:el('p_title').value,city:el('p_city').value,district:el('p_district').value,total_rooms:+el('p_rooms').value,monthly_base_rent_sar:+el('p_rent').value})});refresh()}
+      el('tenant-form').onsubmit=async(e)=>{e.preventDefault();await api('/tenants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:el('t_name').value,email:el('t_email').value,work_or_study:el('t_work').value,interests:el('t_interests').value.split(',').map(v=>v.trim()).filter(Boolean),sleep_schedule:el('t_sleep').value,cleanliness_level:+el('t_clean').value})});refresh()}
+      el('contract-form').onsubmit=async(e)=>{e.preventDefault();await api('/contracts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({property_id:+el('c_property').value,tenant_id:+el('c_tenant').value,monthly_rent_sar:+el('c_rent').value,security_deposit_sar:+el('c_dep').value,start_date:el('c_start').value,end_date:el('c_end').value})});refresh()}
+      el('expense-form').onsubmit=async(e)=>{e.preventDefault();await api('/expenses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({property_id:+el('e_property').value,category:el('e_cat').value,amount_sar:+el('e_amount').value,spent_on:el('e_date').value,notes:el('e_notes').value})});refresh()}
+      el('load-audit').onclick=async()=>{const d=await api('/audit/logs');el('audit').innerHTML=d.items.map(i=>`<tr><td>${i.actor}</td><td>${i.action}</td><td>${i.entity}</td></tr>`).join('')}
+
+      refresh().catch(()=>{});
+    </script>
+  </body>
+</html>
