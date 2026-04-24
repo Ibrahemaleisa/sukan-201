@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سكان | لوحة تشغيل MVP</title>
+    <style>
+      body { font-family: Arial, sans-serif; background: #f7f9fc; margin: 0; color: #1f2a44; }
+      header { background: #0b3d91; color: #fff; padding: 16px 24px; }
+      main { padding: 24px; max-width: 1000px; margin: auto; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 12px; margin-bottom: 24px; }
+      .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+      h2 { margin-top: 0; }
+      form { display: grid; gap: 8px; }
+      input, button { padding: 10px; border-radius: 8px; border: 1px solid #ccd3e0; }
+      button { background: #0b3d91; color: #fff; cursor: pointer; border: none; }
+      table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
+      th, td { padding: 10px; border-bottom: 1px solid #eef1f6; text-align: right; }
+      .muted { color: #667085; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>سكان (Sukan) — لوحة تشغيل كاملة (MVP)</h1>
+    </header>
+    <main>
+      <section class="grid" id="metrics"></section>
+
+      <section class="card">
+        <h2>إضافة وحدة سكنية</h2>
+        <form id="property-form">
+          <input id="title" placeholder="اسم الوحدة" required />
+          <input id="city" placeholder="المدينة" required />
+          <input id="total_rooms" type="number" min="1" placeholder="عدد الغرف" required />
+          <button type="submit">حفظ الوحدة</button>
+        </form>
+      </section>
+
+      <section class="card" style="margin-top: 16px;">
+        <h2>إضافة عقد</h2>
+        <form id="contract-form">
+          <input id="property_id" type="number" min="1" placeholder="رقم الوحدة" required />
+          <input id="tenant_name" placeholder="اسم المستأجر" required />
+          <input id="monthly_rent_sar" type="number" min="1" placeholder="الإيجار الشهري (ريال)" required />
+          <input id="start_date" type="date" required />
+          <input id="end_date" type="date" required />
+          <button type="submit">إضافة العقد</button>
+        </form>
+      </section>
+
+      <section style="margin-top: 16px;">
+        <h2>الوحدات</h2>
+        <p class="muted">يتم التحديث تلقائيًا بعد كل عملية إضافة.</p>
+        <table>
+          <thead><tr><th>رقم</th><th>الاسم</th><th>المدينة</th><th>الإشغال</th></tr></thead>
+          <tbody id="properties-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script>
+      async function fetchJson(url, options) {
+        const res = await fetch(url, options);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.detail || 'حدث خطأ غير متوقع');
+        }
+        return res.json();
+      }
+
+      function renderMetrics(data) {
+        const metrics = document.getElementById('metrics');
+        metrics.innerHTML = `
+          <div class="card"><h2>${data.properties}</h2><p>عدد الوحدات</p></div>
+          <div class="card"><h2>${data.active_contracts}</h2><p>العقود الفعالة</p></div>
+          <div class="card"><h2>${data.occupied_rooms}/${data.total_rooms}</h2><p>إشغال الغرف</p></div>
+          <div class="card"><h2>${data.occupancy_rate}%</h2><p>معدل الإشغال</p></div>
+        `;
+      }
+
+      function renderProperties(list) {
+        const body = document.getElementById('properties-body');
+        body.innerHTML = list.map((p) => `
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.title}</td>
+            <td>${p.city}</td>
+            <td>${p.occupied_rooms}/${p.total_rooms}</td>
+          </tr>
+        `).join('');
+      }
+
+      async function refresh() {
+        const [dashboard, properties] = await Promise.all([
+          fetchJson('/dashboard'),
+          fetchJson('/properties'),
+        ]);
+        renderMetrics(dashboard);
+        renderProperties(properties);
+      }
+
+      document.getElementById('property-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          await fetchJson('/properties', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: document.getElementById('title').value,
+              city: document.getElementById('city').value,
+              total_rooms: Number(document.getElementById('total_rooms').value),
+            }),
+          });
+          e.target.reset();
+          await refresh();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      document.getElementById('contract-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          await fetchJson('/contracts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              property_id: Number(document.getElementById('property_id').value),
+              tenant_name: document.getElementById('tenant_name').value,
+              monthly_rent_sar: Number(document.getElementById('monthly_rent_sar').value),
+              start_date: document.getElementById('start_date').value,
+              end_date: document.getElementById('end_date').value,
+            }),
+          });
+          e.target.reset();
+          await refresh();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      refresh().catch((e) => alert(e.message));
+    </script>
+  </body>
+</html>

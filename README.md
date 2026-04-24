@@ -1,15 +1,16 @@
 # سكان (Sukan)
 
-منصة **PropTech** لحوكمة وتنظيم السكن المشترك (**Co-living**) في المملكة العربية السعودية.
+تطبيق **Full-Stack MVP** لحوكمة وتنظيم السكن المشترك (**Co-living**) في المملكة العربية السعودية.
 
-## ماذا يوجد الآن في المستودع؟
-- وثائق تأسيس المشروع (الرؤية، PRD، المعمارية).
-- **MVP API أولي** باستخدام FastAPI لإدارة:
-  - الوحدات السكنية المشتركة.
-  - العقود الأساسية.
-  - درجة توافق مبدئية بين المستأجرين.
+## ما الذي يعمل الآن؟
+- Backend API مبني على **FastAPI**.
+- قاعدة بيانات **SQLite** (تشغيل مباشر بدون إعدادات معقدة).
+- Frontend Web Dashboard (HTML/CSS/JS) لعمليات:
+  - إضافة وحدات سكنية.
+  - إضافة عقود.
+  - متابعة مؤشرات الإشغال بشكل مباشر.
 
-## تشغيل الـ API محليًا
+## تشغيل التطبيق (Backend + Frontend)
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -17,29 +18,41 @@ pip install -r requirements.txt
 uvicorn apps.api.main:app --reload
 ```
 
-بعد التشغيل:
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- Health check: `http://127.0.0.1:8000/health`
+ثم افتح:
+- التطبيق: `http://127.0.0.1:8000/`
+- Swagger API: `http://127.0.0.1:8000/docs`
 
-## الاختبارات
-```bash
-source .venv/bin/activate
-pytest -q
-```
+> ملاحظة: يتم إنشاء قاعدة البيانات تلقائيًا باسم `sukan.db`.
+> لتحديد مسار مختلف: `SUKAN_DB_PATH=/path/to/db.sqlite uvicorn apps.api.main:app --reload`
 
-## endpoints الحالية (MVP)
+## المزايا الحالية (MVP)
 - `GET /health`
 - `GET /properties`
 - `POST /properties`
 - `GET /contracts`
 - `POST /contracts`
-- `POST /matching/score?interests_overlap=7&schedule_alignment=8`
+- `GET /dashboard`
+- `POST /matching/score?interests_overlap=7&schedule_alignment=8&cleanliness_alignment=9`
 
-## خارطة الخطوة التالية
-1. إضافة قاعدة بيانات PostgreSQL بدل التخزين المؤقت داخل الذاكرة.
-2. إضافة مصادقة وصلاحيات (RBAC).
-3. بناء واجهة ويب أولية للملاك والمشغلين.
+## اختبارات
+```bash
+source .venv/bin/activate
+pytest -q
+```
 
-للتفاصيل المنتجية والمعمارية:
-- `docs/PRD.md`
-- `docs/ARCHITECTURE.md`
+## هيكل المشروع
+```text
+apps/
+├─ api/
+│  └─ main.py
+└─ web/
+   └─ index.html
+tests/
+└─ test_api.py
+```
+
+## الخطوة التالية المقترحة
+1. نقل الواجهة إلى React/Next.js.
+2. إضافة نظام تسجيل دخول وصلاحيات (RBAC).
+3. إضافة PostgreSQL + Alembic migrations للإنتاج.
+4. إضافة إدارة مدفوعات متكاملة (Payment Gateway).
