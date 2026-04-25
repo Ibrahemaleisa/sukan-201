@@ -41,3 +41,21 @@ python -m uvicorn apps.api.main:app --reload
 ```bash
 pytest -q
 ```
+
+## Render Troubleshooting (for this exact error)
+إذا ظهرت في الـ logs الأسطر التالية:
+- `Using Node.js version ...`
+- `Running build command 'yarn'...`
+- ثم `Exited with status 127`
+
+فهذا يعني أن الخدمة مُعرفة كـ **Node** في Render Dashboard (وليست Python)، لذلك Render لم يستخدم `requirements.txt` ولا `render.yaml`.
+
+### الإصلاح الصحيح
+1. في Render Dashboard → Service Settings:
+   - Environment: **Python**
+   - Build Command:
+     `python -m pip install --upgrade pip && python -m pip install -r requirements.txt`
+   - Start Command:
+     `python -m uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT`
+2. أو أنشئ خدمة جديدة عبر **Blueprint** من `render.yaml` حتى تُطبق الإعدادات تلقائيًا.
+3. تأكد أن **Root Directory = /** (جذر المستودع) حيث يوجد `requirements.txt`.
