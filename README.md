@@ -18,8 +18,8 @@
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn apps.api.main:app --reload
+python -m pip install -r requirements.txt
+python -m uvicorn apps.api.main:app --reload
 ```
 
 - Console: `http://127.0.0.1:8000/`
@@ -27,9 +27,9 @@ uvicorn apps.api.main:app --reload
 
 ## Render Deployment (fixed)
 - **Build Command**
-  - `pip install --upgrade pip && pip install -r requirements.txt`
+  - `python -m pip install --upgrade pip && python -m pip install -r requirements.txt`
 - **Start Command**
-  - `uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT`
+  - `python -m uvicorn apps.api.main:app --host 0.0.0.0 --port ${PORT:-10000}`
 
 > تم إضافة `render.yaml` و `runtime.txt` لتثبيت الإعدادات بشكل صريح ومنع أخطاء التشغيل من نوع `Exited with status 127` الناتجة عادة عن أمر تشغيل غير موجود.
 
