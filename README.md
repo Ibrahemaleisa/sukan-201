@@ -31,7 +31,7 @@ python -m uvicorn apps.api.main:app --reload
 - **Start Command**
   - `python -m uvicorn apps.api.main:app --host 0.0.0.0 --port ${PORT:-10000}`
 
-> تم إضافة `render.yaml` و `runtime.txt` لتثبيت الإعدادات بشكل صريح ومنع أخطاء التشغيل من نوع `Exited with status 127` الناتجة عادة عن أمر تشغيل غير موجود.
+> تم إضافة `render.yaml` و `nixpacks.toml` لتثبيت إعدادات البناء/التشغيل بشكل صريح ومنع أخطاء `Railpack build plan`.
 
 ## بيانات الدخول الافتراضية
 - username: `admin`
